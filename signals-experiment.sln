@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Signals", "Signals\Signals.csproj", "{2D308790-D052-430F-BE99-78125FA3D05F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalsTests", "SignalsTests\SignalsTests.csproj", "{B502542D-5E3E-4CD1-84FA-217A3BA10CD9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2D308790-D052-430F-BE99-78125FA3D05F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D308790-D052-430F-BE99-78125FA3D05F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D308790-D052-430F-BE99-78125FA3D05F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D308790-D052-430F-BE99-78125FA3D05F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B502542D-5E3E-4CD1-84FA-217A3BA10CD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B502542D-5E3E-4CD1-84FA-217A3BA10CD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B502542D-5E3E-4CD1-84FA-217A3BA10CD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B502542D-5E3E-4CD1-84FA-217A3BA10CD9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
