@@ -80,6 +80,68 @@ public class Tests
     }
     
     // TODO: Add a new source when updating the func
+    [Test]
+    public void Test5()
+    {
+        var coordinator = new Coordinator();
+
+        var countSignal = new Signal<int>(coordinator, () => 8);
+        var evenSignal = new Signal<bool>(coordinator, () => countSignal.Value % 2 == 0);
+        var animalSignal = new Signal<string>(coordinator, () => "terrapins");
+        var warningSignal = new Signal<string>(coordinator,
+            () => evenSignal.Value ? $"THERE ARE AN EVEN NUMBER OF {animalSignal.Value.ToUpper()}" : "All is well");
+
+        warningSignal.Value.Should().Be("THERE ARE AN EVEN NUMBER OF TERRAPINS");
+
+        countSignal.IsDirty.Should().BeFalse();
+        evenSignal.IsDirty.Should().BeFalse();
+        animalSignal.IsDirty.Should().BeFalse();
+        warningSignal.IsDirty.Should().BeFalse();
+        
+        var adjectiveSignal = new Signal<string>(coordinator, () => "curious");
+        animalSignal.UpdateFunc(() => $"{adjectiveSignal.Value} terrapins");
+        warningSignal.Value.Should().Be("THERE ARE AN EVEN NUMBER OF CURIOUS TERRAPINS");
+        
+        adjectiveSignal.UpdateFunc(() => "angry");
+
+        countSignal.IsDirty.Should().BeFalse();
+        evenSignal.IsDirty.Should().BeFalse();
+        adjectiveSignal.IsDirty.Should().BeTrue();
+        animalSignal.IsDirty.Should().BeTrue();
+        warningSignal.IsDirty.Should().BeTrue();
+    }
+    
+    // TODO: Make sure sources are removed when updating a func
+    [Test]
+    public void Test6()
+    {
+        var coordinator = new Coordinator();
+
+        var countSignal = new Signal<int>(coordinator, () => 8);
+        var evenSignal = new Signal<bool>(coordinator, () => countSignal.Value % 2 == 0);
+        var adjectiveSignal = new Signal<string>(coordinator, () => "curious");
+        var animalSignal = new Signal<string>(coordinator, () => $"{adjectiveSignal.Value} terrapins");
+        var warningSignal = new Signal<string>(coordinator,
+            () => evenSignal.Value ? $"THERE ARE AN EVEN NUMBER OF {animalSignal.Value.ToUpper()}" : "All is well");
+
+        warningSignal.Value.Should().Be("THERE ARE AN EVEN NUMBER OF CURIOUS TERRAPINS");
+
+        countSignal.IsDirty.Should().BeFalse();
+        evenSignal.IsDirty.Should().BeFalse();
+        adjectiveSignal.IsDirty.Should().BeFalse();
+        animalSignal.IsDirty.Should().BeFalse();
+        warningSignal.IsDirty.Should().BeFalse();
+        
+        animalSignal.UpdateFunc(() => "terrapins");
+        warningSignal.Value.Should().Be("THERE ARE AN EVEN NUMBER OF TERRAPINS");
+        adjectiveSignal.UpdateFunc(() => "angry");
+        
+        countSignal.IsDirty.Should().BeFalse();
+        evenSignal.IsDirty.Should().BeFalse();
+        adjectiveSignal.IsDirty.Should().BeTrue();
+        animalSignal.IsDirty.Should().BeFalse();
+        warningSignal.IsDirty.Should().BeFalse();
+    }
     
     // TODO: Add effects
     

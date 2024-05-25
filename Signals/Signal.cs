@@ -1,11 +1,16 @@
 ﻿namespace Signals;
 
-public interface Cacheable
+public interface Sink
 {
     void SetDirty();
 }
 
-public class Signal<T> : Cacheable
+public interface Source
+{
+    void Deregister(Sink sink);
+}
+
+public class Signal<T> : Sink, Source
 {
     private readonly Coordinator _coordinator;
     
@@ -13,22 +18,27 @@ public class Signal<T> : Cacheable
 
     private T _cachedValue;
 
+    private List<Source> _sources;
+
     public bool IsDirty { get; private set; }
 
-    public List<Cacheable> Sinks { get; } = new();
+    public List<Sink> Sinks { get; } = new();
     
     public Signal(Coordinator coordinator, Func<T> func)
     {
         _coordinator = coordinator;
         _func = func;
         
-        _cachedValue = _coordinator.ConfigureSources(this, func);
+        (_cachedValue, _sources) = _coordinator.ConfigureSources(this, func);
         IsDirty = false;
     }
 
     public void UpdateFunc(Func<T> newFunc)
     {
         this._func = newFunc;
+        _sources.ForEach(x => x.Deregister(this));
+        
+        (_cachedValue, _sources) = _coordinator.ConfigureSources(this, newFunc);
         
         SetDirty();
     }
@@ -37,7 +47,7 @@ public class Signal<T> : Cacheable
     {
         get
         {
-            var coordinatorSink = _coordinator.GetCurrentSink();
+            var coordinatorSink = _coordinator.GetCurrentSink(this);
 
             if (coordinatorSink != null)
                 Sinks.Add(coordinatorSink);
@@ -58,23 +68,32 @@ public class Signal<T> : Cacheable
         
         Sinks.ForEach(x => x.SetDirty());
     }
+
+    public void Deregister(Sink sink)
+    {
+        Sinks.Remove(sink);
+    }
 }
 
 public class Coordinator()
 {
-    private Cacheable? _currentSink = null;
+    private Sink? _currentSink = null;
+
+    private List<Source> _currentSources = new List<Source>();
     
-    public T ConfigureSources<T>(Cacheable sink, Func<T> func)
+    public (T, List<Source>) ConfigureSources<T>(Sink sink, Func<T> func)
     {
+        _currentSources = new List<Source>();
         _currentSink = sink;
         var result = func();
         _currentSink = null;
 
-        return result;
+        return (result, _currentSources);
     }
 
-    public Cacheable? GetCurrentSink()
+    public Sink? GetCurrentSink(Source source)
     {
+        _currentSources.Add(source);
         return _currentSink!;
     }
 }
