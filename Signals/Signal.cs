@@ -17,8 +17,19 @@ public class Signal<T> : Sink, Source
     private Func<T> _func;
 
     private T _cachedValue;
-
+    private T CachedValue
+    {
+        get => _cachedValue;
+        set
+        {
+            _effects.ForEach(x => x(_cachedValue, value));
+            _cachedValue = value;
+        }
+    }
+    
     private List<Source> _sources;
+
+    private List<Action<T, T>> _effects = new();
 
     public bool IsDirty { get; private set; }
 
@@ -29,7 +40,7 @@ public class Signal<T> : Sink, Source
         _coordinator = coordinator;
         _func = func;
         
-        (_cachedValue, _sources) = _coordinator.ConfigureSources(this, func);
+        (CachedValue, _sources) = _coordinator.ConfigureSources(this, func);
         IsDirty = false;
     }
 
@@ -38,7 +49,7 @@ public class Signal<T> : Sink, Source
         this._func = newFunc;
         _sources.ForEach(x => x.Deregister(this));
         
-        (_cachedValue, _sources) = _coordinator.ConfigureSources(this, newFunc);
+        (CachedValue, _sources) = _coordinator.ConfigureSources(this, newFunc);
         
         SetDirty();
     }
@@ -54,11 +65,11 @@ public class Signal<T> : Sink, Source
             
             if (IsDirty)
             {
-                _cachedValue = _func.Invoke();
+                CachedValue = _func.Invoke();
                 IsDirty = false;
             }
 
-            return _cachedValue;
+            return CachedValue;
         }
     }
 
@@ -72,6 +83,11 @@ public class Signal<T> : Sink, Source
     public void Deregister(Sink sink)
     {
         Sinks.Remove(sink);
+    }
+    
+    public void AddEffect(Action<T, T> action)
+    {
+        _effects.Add(action);
     }
 }
 

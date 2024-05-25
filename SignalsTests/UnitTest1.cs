@@ -6,7 +6,7 @@ namespace SignalsTests;
 public class Tests
 {
     [Test]
-    public void Test1()
+    public void FunctionUpdated_ValueChanges()
     {
         var coordinator = new Coordinator();
         var sut = new Signal<int>(coordinator, () => 4);
@@ -19,7 +19,7 @@ public class Tests
     }
 
     [Test]
-    public void Test2()
+    public void FunctionUpdated_ValueChangesForSinks()
     {
         var coordinator = new Coordinator();
         var intSource = new Signal<int>(coordinator, () => 7);
@@ -35,7 +35,7 @@ public class Tests
     }
 
     [Test]
-    public void Test3()
+    public void FunctionUpdated_MarkedAsDirty()
     {
         var coordinator = new Coordinator();
         var sut = new Signal<int>(coordinator, () => 4);
@@ -52,7 +52,7 @@ public class Tests
     }
 
     [Test]
-    public void Test4()
+    public void FunctionUpdated_SinksAreMarkedDirty()
     {
         var coordinator = new Coordinator();
 
@@ -79,9 +79,8 @@ public class Tests
         warningSignal.IsDirty.Should().BeTrue();
     }
     
-    // TODO: Add a new source when updating the func
     [Test]
-    public void Test5()
+    public void FunctionUpdated_NewSourcesAdded()
     {
         var coordinator = new Coordinator();
 
@@ -111,9 +110,8 @@ public class Tests
         warningSignal.IsDirty.Should().BeTrue();
     }
     
-    // TODO: Make sure sources are removed when updating a func
     [Test]
-    public void Test6()
+    public void FunctionUpdated_UnusedSourcesAreRemoved()
     {
         var coordinator = new Coordinator();
 
@@ -143,7 +141,42 @@ public class Tests
         warningSignal.IsDirty.Should().BeFalse();
     }
     
-    // TODO: Add effects
+    [Test]
+    public void FunctionUpdated_EffectTriggered()
+    {
+        var coordinator = new Coordinator();
+        
+        var testSignal = new Signal<int>(coordinator, () => 8);
+
+        (int?, int?) effectResult = (null, null);
+        testSignal.AddEffect((x, y) => effectResult = (x, y));
+
+        testSignal.UpdateFunc(() => 9);
+        
+        effectResult.Should().Be((8, 9));
+    }
+
+    [Test]
+    public void SignalIsDirty_ValueComputed_EffectTriggered()
+    {
+        var coordinator = new Coordinator();
+        
+        var firstSignal = new Signal<int>(coordinator, () => 8);
+        var secondSignal = new Signal<int>(coordinator, () => firstSignal.Value * 2);
+
+        (int?, int?) effectResult = (null, null);
+        secondSignal.AddEffect((x, y) => effectResult = (x, y));
+
+        firstSignal.UpdateFunc(() => 9);
+
+        secondSignal.IsDirty.Should().BeTrue();
+        secondSignal.Value.Should().Be(18);
+        effectResult.Should().Be((16, 18));
+
+        effectResult = (null, null);
+        secondSignal.Value.Should().Be(18);
+        effectResult.Should().Be((null, null));
+    }
     
     // TODO: Check it works with reference types
 }
